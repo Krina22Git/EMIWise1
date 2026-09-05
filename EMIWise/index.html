@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMIWise — Plan Smarter. Borrow Better.</title>
+<meta name="description" content="EMIWise — a smart loan planning platform for EMI calculation, loan comparison, amortization, prepayment simulation and affordability analysis.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js" onerror="var s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js'; document.head.appendChild(s);"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ NAVBAR ============ -->
+<header class="navbar">
+  <div class="nav-inner">
+    <a href="#home" class="brand">EMI<span>Wise</span></a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#home">Home</a>
+      <a href="#calculator">EMI Calculator</a>
+      <a href="#compare">Compare Loans</a>
+      <a href="#amortization">Amortization</a>
+      <a href="#prepayment">Prepayment</a>
+      <a href="#affordability">Affordability</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#loan-types">Loan Types</a>
+      <a href="#insights">Insights</a>
+      <a href="#about">About</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">☰</button>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="home">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Smart Loan Planning</p>
+    <h1>EMIWise</h1>
+    <p class="hero-tagline">Plan Smarter. Borrow Better.</p>
+    <p class="hero-desc">Calculate your EMI, compare loans, simulate prepayments, and understand your borrowing power — all in one place.</p>
+    <div class="hero-actions">
+      <a href="#calculator" class="btn btn-primary">Calculate EMI</a>
+      <a href="#dashboard" class="btn btn-outline">Explore Loan Planner</a>
+    </div>
+  </div>
+</section>
+
+<main>
+
+  <!-- ============ 1. EMI CALCULATOR ============ -->
+  <section class="section" id="calculator">
+    <div class="section-inner">
+      <span class="section-tag">01</span>
+      <h2>EMI Calculator</h2>
+      <p class="section-sub">Work out your monthly instalment using the standard reducing-balance formula.</p>
+
+      <div class="card form-card">
+        <div class="form-grid">
+          <div class="field">
+            <label for="calc-amount">Loan amount (₹)</label>
+            <input type="number" id="calc-amount" value="1000000" min="0" step="1000">
+            <span class="field-error" id="calc-amount-error"></span>
+          </div>
+          <div class="field">
+            <label for="calc-rate">Annual interest rate (%)</label>
+            <input type="number" id="calc-rate" value="9" min="0" max="50" step="0.05">
+            <span class="field-error" id="calc-rate-error"></span>
+          </div>
+          <div class="field">
+            <label for="calc-tenure">Loan tenure</label>
+            <div class="inline-pair">
+              <input type="number" id="calc-tenure" value="5" min="1" step="1">
+              <select id="calc-tenure-unit">
+                <option value="years" selected>Years</option>
+                <option value="months">Months</option>
+              </select>
+            </div>
+            <span class="field-error" id="calc-tenure-error"></span>
+          </div>
+        </div>
+        <button class="btn btn-ghost" id="calc-reset">Reset</button>
+      </div>
+
+      <div class="kpi-row" id="calc-results">
+        <div class="kpi-card accent-navy">
+          <span class="kpi-label">Monthly EMI</span>
+          <span class="kpi-value" id="calc-emi">—</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Total principal</span>
+          <span class="kpi-value" id="calc-principal">—</span>
+        </div>
+        <div class="kpi-card accent-gold">
+          <span class="kpi-label">Total interest</span>
+          <span class="kpi-value" id="calc-interest">—</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Total repayment</span>
+          <span class="kpi-value" id="calc-total">—</span>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <canvas id="calc-chart" height="90"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2. LOAN COMPARISON ============ -->
+  <section class="section alt" id="compare">
+    <div class="section-inner">
+      <span class="section-tag">02</span>
+      <h2>Compare Loans</h2>
+      <p class="section-sub">Line up two or more offers side by side. The lowest EMI is not always the cheapest loan overall.</p>
+
+      <div class="compare-grid" id="compare-grid"></div>
+      <button class="btn btn-outline" id="add-loan-btn">+ Add another offer</button>
+
+      <div class="card" id="compare-verdict-card" style="display:none;">
+        <p id="compare-verdict"></p>
+      </div>
+
+      <div class="table-wrap card">
+        <table class="data-table" id="compare-table">
+          <thead>
+            <tr>
+              <th>Offer</th>
+              <th>Loan amount</th>
+              <th>Rate</th>
+              <th>Tenure</th>
+              <th>EMI</th>
+              <th>Total interest</th>
+              <th>Total repayment</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card chart-card">
+        <canvas id="compare-chart" height="100"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3. AMORTIZATION ============ -->
+  <section class="section" id="amortization">
+    <div class="section-inner">
+      <span class="section-tag">03</span>
+      <h2>Amortization Schedule</h2>
+      <p class="section-sub">See exactly how each EMI splits between principal and interest, month by month, until the loan is fully repaid.</p>
+
+      <div class="card form-card">
+        <div class="form-grid">
+          <div class="field">
+            <label for="amort-amount">Loan amount (₹)</label>
+            <input type="number" id="amort-amount" value="1000000" min="0" step="1000">
+          </div>
+          <div class="field">
+            <label for="amort-rate">Annual interest rate (%)</label>
+            <input type="number" id="amort-rate" value="9" min="0" max="50" step="0.05">
+          </div>
+          <div class="field">
+            <label for="amort-tenure">Loan tenure (years)</label>
+            <input type="number" id="amort-tenure" value="5" min="1" step="1">
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-row three">
+        <div class="kpi-card">
+          <span class="kpi-label">Total principal</span>
+          <span class="kpi-value" id="amort-total-principal">—</span>
+        </div>
+        <div class="kpi-card accent-gold">
+          <span class="kpi-label">Total interest</span>
+          <span class="kpi-value" id="amort-total-interest">—</span>
+        </div>
+        <div class="kpi-card accent-navy">
+          <span class="kpi-label">Total payments</span>
+          <span class="kpi-value" id="amort-total-payment">—</span>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="view-toggle">
+          <button class="toggle-btn active" data-view="monthly">Monthly</button>
+          <button class="toggle-btn" data-view="yearly">Yearly</button>
+        </div>
+        <input type="text" id="amort-search" class="search-box" placeholder="Search month/year e.g. 12">
+        <button class="btn btn-ghost" id="amort-export">⬇ Export CSV</button>
+      </div>
+
+      <div class="table-wrap card">
+        <table class="data-table" id="amort-table">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>EMI</th>
+              <th>Principal</th>
+              <th>Interest</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="amort-pagination"></div>
+    </div>
+  </section>
+
+  <!-- ============ 4. PREPAYMENT SIMULATOR ============ -->
+  <section class="section alt" id="prepayment">
+    <div class="section-inner">
+      <span class="section-tag">04 · Key feature</span>
+      <h2>Prepayment Simulator</h2>
+      <p class="section-sub">Paying a little extra every month goes straight toward principal. See how much time and interest that actually saves.</p>
+
+      <div class="card form-card">
+        <div class="form-grid">
+          <div class="field">
+            <label for="pre-amount">Loan amount (₹)</label>
+            <input type="number" id="pre-amount" value="1000000" min="0" step="1000">
+          </div>
+          <div class="field">
+            <label for="pre-rate">Annual interest rate (%)</label>
+            <input type="number" id="pre-rate" value="9" min="0" max="50" step="0.05">
+          </div>
+          <div class="field">
+            <label for="pre-tenure">Loan tenure (years)</label>
+            <input type="number" id="pre-tenure" value="5" min="1" step="1">
+          </div>
+          <div class="field">
+            <label for="pre-extra">Extra payment per month (₹)</label>
+            <input type="number" id="pre-extra" value="5000" min="0" step="500">
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-panel">
+        <div class="compare-col">
+          <h3>Without prepayment</h3>
+          <p class="big-num" id="pre-base-tenure">—</p>
+          <p class="muted">months</p>
+          <p>Total interest: <strong id="pre-base-interest">—</strong></p>
+        </div>
+        <div class="compare-col highlight">
+          <h3>With extra monthly payment</h3>
+          <p class="big-num" id="pre-new-tenure">—</p>
+          <p class="muted">months</p>
+          <p>Total interest: <strong id="pre-new-interest">—</strong></p>
+        </div>
+      </div>
+
+      <div class="save-banner">
+        <div>
+          <span class="kpi-label">You save</span>
+          <span class="kpi-value" id="pre-months-saved">—</span>
+        </div>
+        <div>
+          <span class="kpi-label">Interest saved</span>
+          <span class="kpi-value" id="pre-interest-saved">—</span>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <canvas id="pre-chart" height="90"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 5. AFFORDABILITY ============ -->
+  <section class="section" id="affordability">
+    <div class="section-inner">
+      <span class="section-tag">05 · Key feature</span>
+      <h2>Affordability Calculator</h2>
+      <p class="section-sub">Before committing to an EMI, check what it leaves you with once the rest of life is paid for.</p>
+
+      <div class="card form-card">
+        <div class="form-grid">
+          <div class="field">
+            <label for="afford-salary">Monthly salary / income (₹)</label>
+            <input type="number" id="afford-salary" value="60000" min="0" step="1000">
+          </div>
+          <div class="field">
+            <label for="afford-existing-emi">Existing EMIs (₹/month)</label>
+            <input type="number" id="afford-existing-emi" value="0" min="0" step="500">
+          </div>
+          <div class="field">
+            <label for="afford-expenses">Monthly household expenses (₹)</label>
+            <input type="number" id="afford-expenses" value="20000" min="0" step="500">
+          </div>
+          <div class="field">
+            <label for="afford-new-emi">Proposed new EMI (₹/month)</label>
+            <input type="number" id="afford-new-emi" value="15000" min="0" step="500">
+          </div>
+        </div>
+      </div>
+
+      <div class="verdict-card" id="afford-verdict">
+        <span class="verdict-badge" id="afford-badge">—</span>
+        <div class="verdict-text">
+          <p id="afford-detail">Fill in the numbers above to see where you stand.</p>
+          <ul class="verdict-stats" id="afford-stats"></ul>
+        </div>
+      </div>
+      <p class="disclaimer">This is a simple rule-based educational estimate (below 30% = affordable, 30–50% = moderate, above 50% = high burden), not professional financial advice.</p>
+
+      <div class="card chart-card">
+        <canvas id="afford-chart" height="90"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. DASHBOARD ============ -->
+  <section class="section alt" id="dashboard">
+    <div class="section-inner">
+      <span class="section-tag">06</span>
+      <h2>Interactive Dashboard</h2>
+      <p class="section-sub">A live snapshot of the loan set up in the EMI Calculator above — updates automatically as you change it.</p>
+
+      <div class="kpi-row" id="dash-kpis">
+        <div class="kpi-card accent-navy">
+          <span class="kpi-label">Monthly EMI</span>
+          <span class="kpi-value" id="dash-emi">—</span>
+        </div>
+        <div class="kpi-card accent-gold">
+          <span class="kpi-label">Total interest</span>
+          <span class="kpi-value" id="dash-interest">—</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Total repayment</span>
+          <span class="kpi-value" id="dash-total">—</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Loan tenure</span>
+          <span class="kpi-value" id="dash-tenure">—</span>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card chart-box">
+          <h3>Principal vs. interest</h3>
+          <canvas id="dash-pie"></canvas>
+        </div>
+        <div class="card chart-box">
+          <h3>Loan balance over time</h3>
+          <canvas id="dash-balance"></canvas>
+        </div>
+        <div class="card chart-box wide">
+          <h3>Monthly EMI breakdown (first 24 months)</h3>
+          <canvas id="dash-breakdown"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 7. LOAN TYPES ============ -->
+  <section class="section" id="loan-types">
+    <div class="section-inner">
+      <span class="section-tag">07</span>
+      <h2>Loan Types</h2>
+      <p class="section-sub">Illustrative demo data for common loan categories — not current lender offers.</p>
+
+      <div class="loan-type-grid">
+        <div class="card loan-type-card" data-loan="home" tabindex="0" role="button" aria-haspopup="dialog">
+          <span class="loan-icon">🏠</span>
+          <h3>Home Loan</h3>
+          <p class="loan-use">Buying or constructing a house or flat.</p>
+          <p><strong>Illustrative rate:</strong> 8% – 10.5% p.a.</p>
+          <p><strong>Typical tenure:</strong> 10 – 30 years</p>
+          <p class="loan-desc">Usually the lowest-rate, longest-tenure loan since it's secured against the property.</p>
+          <span class="loan-more">View details →</span>
+        </div>
+        <div class="card loan-type-card" data-loan="car" tabindex="0" role="button" aria-haspopup="dialog">
+          <span class="loan-icon">🚗</span>
+          <h3>Car Loan</h3>
+          <p class="loan-use">Buying a new or used vehicle.</p>
+          <p><strong>Illustrative rate:</strong> 8.5% – 12% p.a.</p>
+          <p><strong>Typical tenure:</strong> 3 – 7 years</p>
+          <p class="loan-desc">Secured against the vehicle; rate depends on new vs. used and down payment.</p>
+          <span class="loan-more">View details →</span>
+        </div>
+        <div class="card loan-type-card" data-loan="personal" tabindex="0" role="button" aria-haspopup="dialog">
+          <span class="loan-icon">👤</span>
+          <h3>Personal Loan</h3>
+          <p class="loan-use">Unsecured funds for any personal need.</p>
+          <p><strong>Illustrative rate:</strong> 10.5% – 18% p.a.</p>
+          <p><strong>Typical tenure:</strong> 1 – 5 years</p>
+          <p class="loan-desc">No collateral required, so rates are higher and approval depends heavily on credit score.</p>
+          <span class="loan-more">View details →</span>
+        </div>
+        <div class="card loan-type-card" data-loan="education" tabindex="0" role="button" aria-haspopup="dialog">
+          <span class="loan-icon">🎓</span>
+          <h3>Education Loan</h3>
+          <p class="loan-use">Tuition and living costs for higher studies.</p>
+          <p><strong>Illustrative rate:</strong> 8% – 13% p.a.</p>
+          <p><strong>Typical tenure:</strong> 5 – 15 years</p>
+          <p class="loan-desc">Often has a moratorium period (repayment starts after course completion).</p>
+          <span class="loan-more">View details →</span>
+        </div>
+      </div>
+      <p class="disclaimer">Rates and examples shown on EMIWise are for educational/demo purposes only and should not be considered financial advice or current lender offers.</p>
+    </div>
+  </section>
+
+  <!-- ============ LOAN TYPE DETAIL MODAL ============ -->
+  <div class="modal-overlay" id="loan-modal-overlay">
+    <div class="modal-box" id="loan-modal-box" role="dialog" aria-modal="true" aria-labelledby="loan-modal-title">
+      <button class="modal-close" id="loan-modal-close" aria-label="Close">✕</button>
+      <div class="modal-icon" id="loan-modal-icon"></div>
+      <h3 id="loan-modal-title"></h3>
+      <p class="modal-tagline" id="loan-modal-tagline"></p>
+
+      <div class="modal-stats" id="loan-modal-stats"></div>
+
+      <h4>Eligibility</h4>
+      <ul id="loan-modal-eligibility"></ul>
+
+      <h4>Documents usually required</h4>
+      <ul id="loan-modal-documents"></ul>
+
+      <div class="modal-pros-cons">
+        <div>
+          <h4>Pros</h4>
+          <ul id="loan-modal-pros"></ul>
+        </div>
+        <div>
+          <h4>Watch out for</h4>
+          <ul id="loan-modal-cons"></ul>
+        </div>
+      </div>
+
+      <p class="modal-tip" id="loan-modal-tip"></p>
+    </div>
+  </div>
+
+  <!-- ============ 8. FINANCIAL INSIGHTS ============ -->
+  <section class="section alt" id="insights">
+    <div class="section-inner">
+      <span class="section-tag">08</span>
+      <h2>Understand Your Loan</h2>
+      <p class="section-sub">The core ideas behind every number on this page, explained simply.</p>
+
+      <div class="insight-grid">
+        <div class="card insight-card">
+          <h3>What is EMI?</h3>
+          <p>Equated Monthly Instalment — a fixed monthly payment that repays a loan over its tenure, covering both interest and principal.</p>
+        </div>
+        <div class="card insight-card">
+          <h3>Principal vs. Interest</h3>
+          <p>Principal is the amount you borrowed. Interest is the cost of borrowing it. Every EMI repays a bit of both.</p>
+        </div>
+        <div class="card insight-card">
+          <h3>Reducing-balance interest</h3>
+          <p>Interest is charged only on the outstanding balance, so as you repay principal, the interest portion of each EMI shrinks.</p>
+        </div>
+        <div class="card insight-card">
+          <h3>Amortization</h3>
+          <p>The process of paying off a loan gradually through scheduled instalments, detailed month-by-month in an amortization table.</p>
+        </div>
+        <div class="card insight-card">
+          <h3>Loan tenure</h3>
+          <p>The total time given to repay a loan. Longer tenure means lower EMI but more total interest paid.</p>
+        </div>
+        <div class="card insight-card">
+          <h3>Prepayment</h3>
+          <p>Paying more than the required EMI. Extra amounts reduce principal directly, shortening the loan and cutting interest.</p>
+        </div>
+        <div class="card insight-card">
+          <h3>Interest savings</h3>
+          <p>The difference in total interest paid between two repayment strategies — e.g. with and without prepayment.</p>
+        </div>
+        <div class="card insight-card">
+          <h3>Debt-to-income ratio</h3>
+          <p>Total monthly loan payments divided by monthly income. Lenders and borrowers both use it to gauge affordability.</p>
+        </div>
+      </div>
+
+      <div class="card finance-behind">
+        <h3>Finance Behind EMIWise</h3>
+        <p>This project applies core finance concepts you can present directly:</p>
+        <ul class="concept-list">
+          <li><strong>Time Value of Money</strong> — the EMI formula discounts future payments to today's borrowed amount.</li>
+          <li><strong>Loan Amortization</strong> — the schedule shows how a lump-sum liability is retired over time.</li>
+          <li><strong>Reducing Balance Method</strong> — interest is recalculated each month on the shrinking balance, not the original principal.</li>
+          <li><strong>Interest Cost</strong> — total interest reveals the real cost of a loan beyond its headline rate.</li>
+          <li><strong>Debt Burden</strong> — the affordability ratio models basic personal-finance risk assessment.</li>
+          <li><strong>Financial Planning</strong> — comparing tenures, rates and prepayment shows trade-offs in borrowing decisions.</li>
+          <li><strong>Prepayment Benefits</strong> — demonstrates how extra principal payments compound into large interest savings.</li>
+          <li><strong>Loan Comparison</strong> — shows why EMI alone is a poor basis for choosing a loan.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 9. ABOUT ============ -->
+  <section class="section" id="about">
+    <div class="section-inner">
+      <span class="section-tag">09</span>
+      <h2>About EMIWise</h2>
+      <p class="about-text">EMIWise is a smart loan planning platform designed to help borrowers understand the real cost of borrowing before taking a loan.</p>
+      <div class="about-focus">
+        <span>Financial awareness</span>
+        <span>EMI planning</span>
+        <span>Loan comparison</span>
+        <span>Amortization</span>
+        <span>Prepayment analysis</span>
+        <span>Affordability</span>
+      </div>
+      <p class="disclaimer">Rates and examples shown on EMIWise are for educational/demo purposes only and should not be considered financial advice or current lender offers.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>EMIWise — A Smart Loan Planning and EMI Management Platform. Built for MBA Finance project demonstration.</p>
+</footer>
+
+<script src="js/script.js"></script>
+</body>
+</html>
